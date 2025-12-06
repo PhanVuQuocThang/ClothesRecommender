@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, jsonify
 import sys
-import fetch_weather
 
 app = Flask(__name__)
 
