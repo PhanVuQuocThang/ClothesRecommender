@@ -1,0 +1,7 @@
+# created by virtualenv automatically
+.venv/Lib
+.venv/
+# JetBrains IDEs (e.g., PyCharm, WebStorm, IntelliJ)
+.idea/
+.idea/workspace.xml
+.idea/vcs.xml
