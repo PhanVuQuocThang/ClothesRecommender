@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import sys
+sys.stdout.reconfigure(line_buffering=True)
 
 app = Flask(__name__)
 
