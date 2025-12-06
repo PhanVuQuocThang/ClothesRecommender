@@ -32,34 +32,37 @@ WEATHER_CODE_MAP = {
     99: "Severe thunderstorm with hail"
 }
 
-# --- FETCH WEATHER DATA ---
-url = "https://api.open-meteo.com/v1/forecast"
-params = {
-    "latitude": 21.028,
-    "longitude": 105.834,
-    "daily": "temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode",
-    "forecast_days": 14,
-    "timezone": "Asia/Singapore"
-}
+def fetch_weather_data(lat, lng):
+    # --- FETCH WEATHER DATA ---
+    url = "https://api.open-meteo.com/v1/forecast"
+    params = {
+        "latitude": lat,
+        "longitude": lng,
+        "daily": "temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode",
+        "forecast_days": 14,
+        "timezone": "Asia/Singapore"
+    }
 
-response = requests.get(url, params=params)
-data = response.json()
-daily = data["daily"]
+    response = requests.get(url, params=params)
+    data = response.json()
+    return data
 
-# --- FORMAT & PRINT ---
-print("\n===== 14-Day Weather Forecast =====\n")
+def print_test(data):
+    daily = data['daily']
+    # --- FORMAT & PRINT ---
+    print("\n===== 14-Day Weather Forecast =====\n")
 
-for i in range(len(daily["time"])):
-    date = daily["time"][i]
-    tmax = daily["temperature_2m_max"][i]
-    tmin = daily["temperature_2m_min"][i]
-    rain = daily["precipitation_sum"][i]
-    code = daily["weathercode"][i]
-    label = WEATHER_CODE_MAP.get(code, "Unknown")
+    for i in range(len(daily["time"])):
+        date = daily["time"][i]
+        tmax = daily["temperature_2m_max"][i]
+        tmin = daily["temperature_2m_min"][i]
+        rain = daily["precipitation_sum"][i]
+        code = daily["weathercode"][i]
+        label = WEATHER_CODE_MAP.get(code, "Unknown")
 
-    print(f"{date}")
-    print(f"  · Weather: {label} (code {code})")
-    print(f"  · Max Temp: {tmax}°C")
-    print(f"  · Min Temp: {tmin}°C")
-    print(f"  · Rain: {rain} mm")
-    print()
+        print(f"{date}")
+        print(f"  · Weather: {label} (code {code})")
+        print(f"  · Max Temp: {tmax}°C")
+        print(f"  · Min Temp: {tmin}°C")
+        print(f"  · Rain: {rain} mm")
+        print()
