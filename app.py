@@ -1,4 +1,6 @@
 from flask import Flask, render_template, request, jsonify
+import sys
+import fetch_weather
 
 app = Flask(__name__)
 
@@ -36,6 +38,7 @@ def process_location():
         [print(f"  Selected Option {i}: {selected_options[i]}") for i in range(0, option_num)]
         print(f"  Latitude: {lat}")
         print(f"  Longitude: {lng}")
+        sys.stdout.flush()
 
         # Example: Do something with the data
         result = process_data(selected_options, lat, lng)
