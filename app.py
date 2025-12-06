@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import sys
+import fetch_weather
 sys.stdout.reconfigure(line_buffering=True)
 
 app = Flask(__name__)
@@ -38,18 +39,16 @@ def process_location():
         [print(f"  Selected Option {i}: {selected_options[i]}") for i in range(0, option_num)]
         print(f"  Latitude: {lat}")
         print(f"  Longitude: {lng}")
-        sys.stdout.flush()
 
         # Example: Do something with the data
-        result = process_data(selected_options, lat, lng)
+        process_data(selected_options, lat, lng)
 
         # Return success response
         return jsonify({
             'message': 'Location processed successfully!',
             'data': {
                 'option': selected_options[0],
-                'coordinates': f"{lat}, {lng}",
-                'result': result
+                'coordinates': f"{lat}, {lng}"
             }
         }), 200
 
@@ -64,14 +63,8 @@ def process_data(option, lat, lng):
     Add your custom logic here
     """
     # Example processing
-    if option == 'option1':
-        result = f"Processing option 1 for location ({lat}, {lng})"
-    elif option == 'option2':
-        result = f"Processing option 2 for location ({lat}, {lng})"
-    elif option == 'option3':
-        result = f"Processing option 3 for location ({lat}, {lng})"
-    else:
-        result = f"Processing {option} for location ({lat}, {lng})"
+    weather_data = fetch_weather.fetch_weather_data(lat, lng)
+    fetch_weather.print_test(weather_data)
 
     # You can add:
     # - Database operations
@@ -79,8 +72,6 @@ def process_data(option, lat, lng):
     # - Calculations based on coordinates
     # - File operations
     # etc.
-
-    return result
 
 
 if __name__ == '__main__':
