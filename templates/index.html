@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -77,6 +78,26 @@
             border-color: #667eea;
         }
 
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea !important;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        input[type="number"]:hover {
+            border-color: #667eea;
+        }
+
         #map {
             width: 100%;
             height: 500px;
@@ -150,41 +171,80 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            display: none;
+        }
+
+        .result-box h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .result-box ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .result-box li {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
-            <h1>Header</h1>
-            <p>Description</p>
+            <h1>Fashion Preference Picker</h1>
+            <p>Select your preferences and location</p>
         </div>
 
         <div class="content">
-            <div class="form-group">
-                <label for="dataSelect">Select Data Option:</label>
-                <select id="dataSelect">
-                    <option value="">-- Choose an option --</option>
-                    <option value="option1">Option 1</option>
-                    <option value="option2">Option 2</option>
-                    <option value="option3">Option 3</option>
-                    <option value="option4">Option 4</option>
-                </select>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="genderSelect">Gender:</label>
+                    <select id="genderSelect">
+                        <option value="">-- Select Gender --</option>
+                        <option value="man">Man</option>
+                        <option value="woman">Woman</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="ageInput">Age:</label>
+                    <input type="number" id="ageInput" min="10" max="99" placeholder="Enter age (10-99)"
+                        style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1em; transition: all 0.3s;">
+                </div>
             </div>
 
             <div class="form-group">
-                <label for="second">Select Data Option:</label>
-                <select id="second">
-                    <option value="">-- Choose an option --</option>
-                    <option value="option1">Option 1</option>
-                    <option value="option2">Option 2</option>
-                    <option value="option3">Option 3</option>
-                    <option value="option4">Option 4</option>
+                <label for="occasionSelect">Occasion:</label>
+                <select id="occasionSelect">
+                    <option value="">-- Select Occasion --</option>
+                    <option value="casual">Casual</option>
+                    <option value="ethnic">Ethnic</option>
+                    <option value="formal">Formal</option>
+                    <option value="home">Home</option>
+                    <option value="party">Party</option>
+                    <option value="smart_casual">Smart Casual</option>
+                    <option value="sports">Sports</option>
+                    <option value="travel">Travel</option>
                 </select>
             </div>
 
             <div class="form-group">
                 <label>Choose Location on Map:</label>
-                <p style="color: #666; font-size: 0.9em; margin-bottom: 10px;">Click anywhere on the map to select a location</p>
+                <p style="color: #666; font-size: 0.9em; margin-bottom: 10px;">Click anywhere on the map to select a
+                    location</p>
                 <div id="map"></div>
             </div>
 
@@ -195,6 +255,10 @@
 
             <button class="btn" id="submitBtn" disabled>Submit to Backend</button>
             <div class="status" id="statusMsg"></div>
+            <div class="result-box" id="resultBox">
+                <h3>Results:</h3>
+                <ul id="resultList"></ul>
+            </div>
         </div>
     </div>
 
@@ -218,7 +282,7 @@
             }).addTo(map);
 
             // Add click listener to map
-            map.on('click', function(e) {
+            map.on('click', function (e) {
                 placeMarker(e.latlng);
             });
         }
@@ -250,30 +314,40 @@
 
         // Update submit button state
         function updateSubmitButton() {
-            const dropdown = document.getElementById('dataSelect');
+            const gender = document.getElementById('genderSelect');
+            const age = document.getElementById('ageInput');
+            const occasion = document.getElementById('occasionSelect');
             const submitBtn = document.getElementById('submitBtn');
 
-            if (dropdown.value && selectedLocation) {
+            // Check if all fields are filled and valid
+            const ageValue = parseInt(age.value);
+            const isAgeValid = ageValue >= 10 && ageValue <= 99;
+
+            if (gender.value && isAgeValid && occasion.value && selectedLocation) {
                 submitBtn.disabled = false;
             } else {
                 submitBtn.disabled = true;
             }
         }
 
-        // Handle dropdown change
-        document.getElementById('dataSelect').addEventListener('change', updateSubmitButton);
+        // Handle dropdown and input changes
+        document.getElementById('genderSelect').addEventListener('change', updateSubmitButton);
+        document.getElementById('ageInput').addEventListener('input', updateSubmitButton);
+        document.getElementById('occasionSelect').addEventListener('change', updateSubmitButton);
 
         // Handle form submission
         document.getElementById('submitBtn').addEventListener('click', async () => {
-            const dropdown = document.getElementById('dataSelect');
-            const dropdown2 = document.getElementById('second');
+            const gender = document.getElementById('genderSelect');
+            const age = document.getElementById('ageInput');
+            const occasion = document.getElementById('occasionSelect');
             const statusMsg = document.getElementById('statusMsg');
             const submitBtn = document.getElementById('submitBtn');
 
             // Prepare data to send
             const data = {
-                selectedOption1: dropdown.value,
-                selectedOption2: dropdown2.value,
+                gender: gender.value,
+                age: parseInt(age.value),
+                occasion: occasion.value,
                 location: selectedLocation
             };
 
@@ -296,6 +370,21 @@
                     statusMsg.className = 'status success';
                     statusMsg.textContent = result.message || 'Data submitted successfully!';
                     statusMsg.style.display = 'block';
+
+                    // Display results if available
+                    if (result.data && result.data.result && Array.isArray(result.data.result)) {
+                        const resultBox = document.getElementById('resultBox');
+                        const resultList = document.getElementById('resultList');
+
+                        resultList.innerHTML = '';
+                        result.data.result.forEach(item => {
+                            const li = document.createElement('li');
+                            li.textContent = item;
+                            resultList.appendChild(li);
+                        });
+
+                        resultBox.style.display = 'block';
+                    }
                 } else {
                     throw new Error(result.error || 'Submission failed');
                 }
@@ -312,4 +401,5 @@
         initMap();
     </script>
 </body>
+
 </html>
