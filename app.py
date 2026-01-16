@@ -1,10 +1,15 @@
+import os
+os.environ["TF_USE_LEGACY_KERAS"] = "1"
+
 from flask import Flask, render_template, request, jsonify
 import sys
 import fetch_weather
+from model.build_model import RecommendationEngine
 sys.stdout.reconfigure(line_buffering=True)
 
 app = Flask(__name__)
 
+recommendation_engine = RecommendationEngine()
 
 @app.route('/')
 def index():
@@ -19,36 +24,16 @@ def process_location():
     try:
         # Get JSON data from request
         data = request.get_json()
-
-        # Extract the data
-        selected_options = [data.get(f'selectedOption{i}') for i in range (1, option_num + 1)]
-        location = data.get('location')
-
-        # Validate data
-        if not selected_options or not location:
-            return jsonify({'error': 'Missing required data'}), 400
-
-        lat = location.get('lat')
-        lng = location.get('lng')
-
-        if lat is None or lng is None:
-            return jsonify({'error': 'Invalid location data'}), 400
-
-        # Process the data (add your logic here)
-        print(f"Received data:")
-        [print(f"  Selected Option {i}: {selected_options[i]}") for i in range(0, option_num)]
-        print(f"  Latitude: {lat}")
-        print(f"  Longitude: {lng}")
+        print(data)
 
         # Example: Do something with the data
-        process_data(selected_options, lat, lng)
+        result = process_data(data)
 
         # Return success response
         return jsonify({
             'message': 'Location processed successfully!',
             'data': {
-                'option': selected_options[0],
-                'coordinates': f"{lat}, {lng}"
+                'result': result
             }
         }), 200
 
@@ -57,22 +42,56 @@ def process_location():
         return jsonify({'error': f'Server error: {str(e)}'}), 500
 
 
-def process_data(option, lat, lng):
-    """
-    Process the location data based on selected option
-    Add your custom logic here
-    """
-    # Example processing
-    weather_data = fetch_weather.fetch_weather_data(lat, lng)
-    fetch_weather.print_test(weather_data)
+@app.route('/recommend', methods=['POST'])
+def recommend():
+    """Get product recommendations"""
+    try:
+        data = request.get_json()
 
-    # You can add:
-    # - Database operations
-    # - API calls to other services
-    # - Calculations based on coordinates
-    # - File operations
-    # etc.
+        # Extract user preferences
+        user_inputs = {
+            'gender': data.get('gender', 'Men'),
+            'articleType': data.get('articleType', 'Tshirts'),
+            'season': data.get('season', 'Summer'),
+            'usage': data.get('usage', 'Casual')
+        }
 
+        # Get recommendations using the class
+        recommendations = recommendation_engine.predict(user_inputs)
+
+        return jsonify({
+            'recommendations': recommendations,
+            'query': user_inputs
+        }), 200
+
+    except Exception as e:
+        print(f"Error in recommendation: {str(e)}")
+        return jsonify({'error': f'Recommendation error: {str(e)}'}), 500
+
+
+def process_data(data: dict):
+    """Process the location data based on selected option"""
+    location = data['location']
+    weather_data = fetch_weather.fetch_weather_data(location['lat'], location['lng'])
+    #print(weather_data)
+    season = fetch_weather.categorize_season(weather_data)
+
+    # Example: Use weather to determine season/usage
+    # You can integrate this with your recommendation system
+
+    # Example recommendation based on weather
+    user_inputs = {
+        'gender': data['gender'],
+        'articleType': 'Tshirts',
+        'season': season,  # Could be derived from weather_data
+        'usage': data['occasion'].capitalize()
+    }
+
+    # Use the class to get recommendations
+    recommendations = recommendation_engine.predict(user_inputs)
+
+    return recommendations
 
 if __name__ == '__main__':
-    app.run(debug=True, host='localhost', port=5000)
+    recommendation_engine.load_model_and_index()
+    app.run(debug=False, host='localhost', port=5000)

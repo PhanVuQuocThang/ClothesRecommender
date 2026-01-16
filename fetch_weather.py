@@ -1,4 +1,5 @@
 import requests
+from statistics import mean
 
 # --- WEATHER CODE MAP ---
 WEATHER_CODE_MAP = {
@@ -46,6 +47,21 @@ def fetch_weather_data(lat, lng):
     response = requests.get(url, params=params)
     data = response.json()
     return data
+
+def process_weather_data(data):
+    """data fetched from fetch_weather_data, pass as is, don't change
+    {'selectedOption1': 'option2', 'selectedOption2': '', 'location': {'lat': 30.90850901987831, 'lng': 121.47644044831395}}"""
+
+def categorize_season(weather_data: dict) -> str:
+    lat = weather_data['latitude']
+    lng = weather_data['longitude']
+    #avg_temperature_2m_max = mean(weather_data['temperature_2m_max'])
+    #avg_temperature_2m_min = mean(weather_data['temperature_2m_min'])
+    avg_temperature = 0# (avg_temperature_2m_max + avg_temperature_2m_min) / 2
+    if avg_temperature > 25:
+        return 'Summer'
+    else:
+        return 'Winter'
 
 def print_test(data):
     daily = data['daily']

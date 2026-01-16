@@ -5,3 +5,5 @@
 .idea/
 .idea/workspace.xml
 .idea/vcs.xml
+test.py
+model/test.py
