@@ -10,6 +10,7 @@ sys.stdout.reconfigure(line_buffering=True)
 app = Flask(__name__)
 
 recommendation_engine = RecommendationEngine()
+recommendation_engine.load_model_and_index()
 
 @app.route('/')
 def index():
@@ -93,5 +94,4 @@ def process_data(data: dict):
     return recommendations
 
 if __name__ == '__main__':
-    recommendation_engine.load_model_and_index()
     app.run(debug=False, host='localhost', port=5000)
